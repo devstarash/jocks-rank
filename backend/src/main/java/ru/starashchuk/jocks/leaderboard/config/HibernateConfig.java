@@ -38,7 +38,7 @@ public class HibernateConfig {
     public LocalSessionFactoryBean sessionFactory() {
         LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
         sessionFactory.setDataSource(dataSource());
-        sessionFactory.setPackagesToScan("ru.starashchuk.jocks.leaderboard");
+        sessionFactory.setPackagesToScan("ru.starashchuk.jocks.leaderboard.model");
         sessionFactory.setHibernateProperties(hibernateProperties());
         return sessionFactory;
     }
