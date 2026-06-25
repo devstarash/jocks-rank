@@ -23,8 +23,8 @@ public class OneRepResultRepository {
     public List<OneRepResult> findAll() {
         Session session = factory.getCurrentSession();
         SelectionQuery<OneRepResult> findOneRepResultsRequest =
-                session.createSelectionQuery("FROM OneRepResult WHERE approved = true" +
-                        " ORDER BY total DESC", OneRepResult.class);
+                session.createSelectionQuery("FROM OneRepResult o JOIN FETCH o.user " +
+                        "WHERE o.approved = true ORDER BY o.total DESC", OneRepResult.class);
         List<OneRepResult> results = findOneRepResultsRequest.getResultList();
         return results;
     }
@@ -32,8 +32,8 @@ public class OneRepResultRepository {
     public List<OneRepResult> findByUserId(Integer id) {
         Session session = factory.getCurrentSession();
         SelectionQuery<OneRepResult> findByIdRequest = session
-                .createSelectionQuery("Select r FROM OneRepResult WHERE r.user.id = :id" +
-                        " ORDER BY recordedAt DESC", OneRepResult.class)
+                .createSelectionQuery("FROM OneRepResult o JOIN FETCH o.user" +
+                        " WHERE o.user.id = :id ORDER BY o.recordedAt DESC", OneRepResult.class)
                 .setParameter("id", id);
         List<OneRepResult> result = findByIdRequest.getResultList();
         return result;
