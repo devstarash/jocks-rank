@@ -31,7 +31,7 @@ public class UserRepository {
     public Optional<User> findById(Integer id) {
         Session session = factory.getCurrentSession();
         SelectionQuery<User> findByIdRequest = session
-                .createSelectionQuery("Select u FROM User WHERE u.id = :id", User.class)
+                .createSelectionQuery("Select u FROM User u WHERE u.id = :id", User.class)
                 .setParameter("id", id);
         Optional<User> user = findByIdRequest.uniqueResultOptional();
         return user;
@@ -40,7 +40,7 @@ public class UserRepository {
     public Optional<User> findByUsername(String username) {
         Session session = factory.getCurrentSession();
         SelectionQuery<User> findByUsernameRequest = session
-                .createSelectionQuery("Select u FROM User WHERE u.username = :username", User.class)
+                .createSelectionQuery("Select u FROM User u WHERE u.username = :username", User.class)
                 .setParameter("username", username);
         Optional<User> user = findByUsernameRequest.uniqueResultOptional();
         return user;
