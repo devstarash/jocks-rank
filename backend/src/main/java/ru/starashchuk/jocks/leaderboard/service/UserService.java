@@ -1,14 +1,10 @@
 package ru.starashchuk.jocks.leaderboard.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.starashchuk.jocks.leaderboard.model.AuthResponse;
-import ru.starashchuk.jocks.leaderboard.model.LoginRequest;
-import ru.starashchuk.jocks.leaderboard.model.RegisterRequest;
-import ru.starashchuk.jocks.leaderboard.model.User;
+import ru.starashchuk.jocks.leaderboard.model.*;
 import ru.starashchuk.jocks.leaderboard.repository.UserRepository;
 import ru.starashchuk.jocks.leaderboard.security.JwtUtil;
 
