@@ -3,6 +3,7 @@ package ru.starashchuk.jocks.leaderboard.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.starashchuk.jocks.leaderboard.exception.NotFoundException;
 import ru.starashchuk.jocks.leaderboard.model.Category;
 import ru.starashchuk.jocks.leaderboard.repository.CategoryRepository;
 
@@ -20,7 +21,7 @@ public class CategoryService {
     @Transactional(readOnly = true)
     public Category findBySlug(String slug) {
         Category category = categoryRepository.findBySlug(slug)
-                .orElseThrow(() -> new RuntimeException("Категория не найдена: " + slug));
+                .orElseThrow(() -> new NotFoundException("Категория не найдена: " + slug));
         return category;
     }
 }

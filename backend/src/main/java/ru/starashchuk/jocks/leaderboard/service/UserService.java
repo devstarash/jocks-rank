@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import ru.starashchuk.jocks.leaderboard.exception.AccessDeniedException;
+import ru.starashchuk.jocks.leaderboard.exception.AlreadyExistsException;
+import ru.starashchuk.jocks.leaderboard.exception.NotFoundException;
 import ru.starashchuk.jocks.leaderboard.model.*;
 import ru.starashchuk.jocks.leaderboard.repository.UserRepository;
 import ru.starashchuk.jocks.leaderboard.security.JwtUtil;
@@ -18,7 +21,7 @@ public class UserService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Пользователь с таким username уже существует");
+            throw new AlreadyExistsException("Пользователь с таким username уже существует");
         }
         User user = new User();
         user.setUsername(request.getUsername());
@@ -33,9 +36,9 @@ public class UserService {
     @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new RuntimeException("Неверный пароль");
+            throw new AccessDeniedException("Неверный пароль");
         }
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
         return new AuthResponse(token, user.getUsername(), user.getRole());
