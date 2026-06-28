@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import ru.starashchuk.jocks.leaderboard.model.Result;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -40,5 +41,15 @@ public class ResultRepository {
                         .setParameter("id", id);
         List<Result> results = findResultsRequest.getResultList();
         return results;
+    }
+
+    public void deleteById(Integer id) {
+        Result result = factory.getCurrentSession().find(Result.class, id);
+        if (result != null) {
+            factory.getCurrentSession().remove(result);
+        }
+    }
+    public Optional<Result> findById(Integer id) {
+        return Optional.ofNullable(factory.getCurrentSession().find(Result.class, id));
     }
 }

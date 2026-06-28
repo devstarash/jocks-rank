@@ -4,8 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.starashchuk.jocks.leaderboard.mapper.ResultMapper;
+import ru.starashchuk.jocks.leaderboard.model.AddResultRequest;
+import ru.starashchuk.jocks.leaderboard.model.Category;
 import ru.starashchuk.jocks.leaderboard.model.Result;
 import ru.starashchuk.jocks.leaderboard.model.User;
+import ru.starashchuk.jocks.leaderboard.repository.CategoryRepository;
+import ru.starashchuk.jocks.leaderboard.repository.ResultRepository;
 import ru.starashchuk.jocks.leaderboard.repository.UserRepository;
 
 import java.util.List;
@@ -16,6 +20,8 @@ public class LocalResultService {
 
     private final UserRepository userRepository;
     private final ResultService resultService;
+    private final CategoryRepository categoryRepository;
+    private final ResultRepository resultRepository;
 
     @Transactional(readOnly = true)
     public List<Result> getMyResults(String username) {
@@ -24,4 +30,31 @@ public class LocalResultService {
         return resultService.getByUserId(user.getId());
     }
 
+    @Transactional
+    public Result addResult(String username, AddResultRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        Category category = categoryRepository.findBySlug(request.getCategorySlug())
+                .orElseThrow(() -> new RuntimeException("Категория не найдена"));
+        Result result = new Result();
+        result.setUser(user);
+        result.setCategory(category);
+        result.setValue(request.getValue());
+        result.setSource("LOCAL");
+        result.setApproved(false);
+        return resultService.save(result);
+    }
+
+    @Transactional
+    public void deleteResult(String username, Integer id) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        Result result = resultRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Результат не найден"));
+        if (!result.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Нет доступа к этому результату");
+        }
+        resultRepository.deleteById(id);
+    }
 }
