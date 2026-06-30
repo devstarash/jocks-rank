@@ -6,7 +6,7 @@ const Auth = {
     },
 
     async register(username, email, password) {
-        const response = await post('auth/register', { username, email, password }, false);
+        const response = await post('/auth/register', { username, email, password }, false);
         saveAuth(response.token, { username: response.username, role: response.role });
         return response;
     },

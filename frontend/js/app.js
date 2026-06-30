@@ -89,15 +89,77 @@ function renderHome(container) {
     `;
 }
 
-function renderLeaderboard(container, categorySlug) {
+async function renderLeaderboard(container, categorySlug) {
+    container.innerHTML = `
+        <div class="flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div>
+            <span class="ml-3 text-slate-500">Загрузка...</span>
+        </div>
+    `;
+
+    let results;
+    try {
+        results = await Leaderboard.loadLeaderboard(categorySlug);
+    } catch (error) {
+        container.innerHTML = `
+            <div class="text-center py-12">
+                <p class="text-red-500 mb-4">Ошибка: ${error.message}</p>
+                <button onclick="window.location.reload()" class="bg-slate-900 text-white px-4 py-2 rounded-lg">
+                    Повторить
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    const formatted = Leaderboard.formatResults(results);
+
     container.innerHTML = `
         <div class="fade-in">
             <h1 class="text-3xl font-black text-slate-900 mb-2">
                 Лидерборд: ${categorySlug}
             </h1>
-            <p class="text-slate-600 mb-6">Загрузка данных...</p>
+            <p class="text-slate-600 mb-6">Топ атлетов в этой категории</p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white rounded-xl border overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-slate-400 text-xs uppercase border-b">
+                                <th class="py-3 px-4 text-left">Место</th>
+                                <th class="py-3 px-4 text-left">Атлет</th>
+                                <th class="py-3 px-4 text-right">Результат</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${formatted.map(item => `
+                                <tr class="border-b hover:bg-slate-50">
+                                    <td class="py-3 px-4">
+                                        ${Leaderboard.getPlaceBadge(item.place) || item.place}
+                                    </td>
+                                    <td class="py-3 px-4 font-semibold">${item.username}</td>
+                                    <td class="py-3 px-4 text-right font-bold">
+                                        ${item.value} ${item.unit || ''}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-white rounded-xl border p-6">
+                    <h2 class="font-bold text-slate-900 mb-4">Топ-10</h2>
+                    <div id="leaderboard-chart" class="w-full h-[350px]"></div>
+                </div>
+            </div>
         </div>
     `;
+
+    const chartData = formatted.slice(0, 10).map(r => ({
+        name: r.username,
+        value: r.value
+    }));
+    Charts.renderBarChart('leaderboard-chart', chartData, results[0]?.unit || '');
 }
 
 function renderLogin(container) {
