@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.starashchuk.jocks.leaderboard.model.AuthResponse;
 import ru.starashchuk.jocks.leaderboard.model.LoginRequest;
 import ru.starashchuk.jocks.leaderboard.model.RegisterRequest;
+import ru.starashchuk.jocks.leaderboard.model.TelegramAuthRequest;
+import ru.starashchuk.jocks.leaderboard.dto.UserInfoResponse;
+import ru.starashchuk.jocks.leaderboard.service.TelegramAuthService;
 import ru.starashchuk.jocks.leaderboard.service.UserService;
 
 @RestController
@@ -21,23 +24,32 @@ import ru.starashchuk.jocks.leaderboard.service.UserService;
 public class AuthController {
 
     private final UserService userService;
+    private final TelegramAuthService telegramAuthService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request,
+    public ResponseEntity<UserInfoResponse> register(@Valid @RequestBody RegisterRequest request,
             HttpServletResponse response) {
         AuthResponse auth = userService.register(request);
         addTokenCookie(response, auth.getToken());
-        return ResponseEntity.ok(new AuthResponse(null, auth.getUsername(), auth.getRole()));
+        return ResponseEntity.ok(new UserInfoResponse(auth.getUsername(), auth.getRole()));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(
+    public ResponseEntity<UserInfoResponse> login(
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response) {
         AuthResponse auth = userService.login(request);
         addTokenCookie(response, auth.getToken());
-        return ResponseEntity.ok(new AuthResponse(null, auth.getUsername(), auth.getRole()));
+        return ResponseEntity.ok(new UserInfoResponse(auth.getUsername(), auth.getRole()));
+    }
+
+    @PostMapping("/telegram")
+    public ResponseEntity<UserInfoResponse> telegramAuth(
+            @RequestBody TelegramAuthRequest request,
+            HttpServletResponse response) {
+        AuthResponse auth = telegramAuthService.authenticate(request);
+        addTokenCookie(response, auth.getToken());
+        return ResponseEntity.ok(new UserInfoResponse(auth.getUsername(), auth.getRole()));
     }
 
     private void addTokenCookie(HttpServletResponse response, String token) {
