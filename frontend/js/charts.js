@@ -57,10 +57,14 @@ const Charts = {
 };
 
 window.addEventListener('orientationchange', () => {
-    setTimeout(() => Plotly.Plots.resize(), 300);
+    setTimeout(() => {
+        document.querySelectorAll('.js-plotly-plot').forEach(el => Plotly.Plots.resize(el));
+    }, 300);
 });
 
 window.addEventListener('resize', () => {
     clearTimeout(window._resizeTimer);
-    window._resizeTimer = setTimeout(() => Plotly.Plots.resize(), 200);
+    window._resizeTimer = setTimeout(() => {
+        document.querySelectorAll('.js-plotly-plot').forEach(el => Plotly.Plots.resize(el));
+    }, 200);
 });
