@@ -1,24 +1,25 @@
-const API_BASE = 'http://localhost:8080';
+const API_BASE = '/api';
 
 async function request(method, path, body = null, auth = false) {
     const headers = { 'Content-Type': 'application/json' };
 
-    if (auth) {
-        const token = localStorage.getItem('token');
-        if (token) headers['Authorization'] = `Bearer ${token}`;
-    }
+    const config = {
+        method,
+        headers,
+        credentials: 'include' // ВАЖНО: отправляем куки
+    };
 
-    const config = { method, headers };
     if (body) config.body = JSON.stringify(body);
 
     const response = await fetch(`${API_BASE}${path}`, config);
 
     if (!response.ok) {
-        if (response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+        const body = await response.json().catch(() => null);
+        if (response.status === 401 && auth) {
+            clearAuth();
+            window.location.hash = '/login';
         }
-        throw new Error(`Ошибка ${response.status}`);
+        throw new Error(body?.message || `Ошибка ${response.status}`);
     }
 
     return response.status === 204 ? null : response.json();
@@ -44,13 +45,12 @@ function del(path) {
     return request('DELETE', path, null, true);
 }
 
-function saveAuth(token, user) {
-    localStorage.setItem('token', token);
+// Сохраняем юзера в localStorage (токен в куке httpOnly)
+function saveAuth(user) {
     localStorage.setItem('user', JSON.stringify(user));
 }
 
 function clearAuth() {
-    localStorage.removeItem('token');
     localStorage.removeItem('user');
 }
 
@@ -60,7 +60,7 @@ function getUser() {
 }
 
 function isAuthenticated() {
-    return localStorage.getItem('token') !== null;
+    return getUser() !== null;
 }
 
 function isAdmin() {

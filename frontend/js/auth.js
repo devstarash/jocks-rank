@@ -1,18 +1,22 @@
 const Auth = {
     async login(username, password) {
         const response = await post('/auth/login', { username, password }, false);
-        saveAuth(response.token, { username: response.username, role: response.role });
-        return response
+        // response = { username, role }
+        saveAuth(response);
+        return response;
     },
 
     async register(username, email, password) {
         const response = await post('/auth/register', { username, email, password }, false);
-        saveAuth(response.token, { username: response.username, role: response.role });
+        saveAuth(response);
         return response;
     },
 
     logout() {
+        // Опционально: можно сделать запрос на сервер для очистки куки
         clearAuth();
+        // Перезагрузка страницы очистит httpOnly куку (если сервер не сделал эндпоинт logout)
+        window.location.reload();
     },
 
     getCurrentUser() {

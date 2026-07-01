@@ -55,3 +55,12 @@ const Charts = {
         Plotly.newPlot(container, [trace], layout, { responsive: true, displayModeBar: false });
     }
 };
+
+window.addEventListener('orientationchange', () => {
+    setTimeout(() => Plotly.Plots.resize(), 300);
+});
+
+window.addEventListener('resize', () => {
+    clearTimeout(window._resizeTimer);
+    window._resizeTimer = setTimeout(() => Plotly.Plots.resize(), 200);
+});
