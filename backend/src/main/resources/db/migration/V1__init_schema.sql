@@ -49,4 +49,4 @@ CREATE TABLE one_rep_results
 
 CREATE INDEX idx_results_user_id ON results (user_id);
 CREATE INDEX idx_results_category_id ON results (category_id);
-CREATE INDEX idx_one_rep_results_user_id ON one_rep_results (user_id);
+CREATE INDEX idx_one_rep_results_duser_id ON one_rep_results (user_id);

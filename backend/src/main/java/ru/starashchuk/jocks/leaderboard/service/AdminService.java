@@ -33,7 +33,6 @@ public class AdminService {
         result.setUser(user);
         result.setCategory(category);
         result.setValue(request.getValue());
-        result.setSource("GLOBAL");
         result.setApproved(true);
 
         return resultRepository.save(result);

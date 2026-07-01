@@ -37,7 +37,7 @@ public class ResultRepository {
         Session session = factory.getCurrentSession();
         SelectionQuery<Result> findResultsRequest =
                 session.createSelectionQuery
-                                ("Select r FROM Result r WHERE r.user.id = :id ORDER BY r.recordedAt DESC", Result.class)
+                                ("Select r FROM Result r JOIN FETCH r.category WHERE r.user.id = :id ORDER BY r.recordedAt DESC", Result.class)
                         .setParameter("id", id);
         List<Result> results = findResultsRequest.getResultList();
         return results;
