@@ -2,8 +2,6 @@ package ru.starashchuk.jocks.leaderboard.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Temporal;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,8 +25,8 @@ public class User {
 
     private String role = "USER";
 
-    @Column(name = "vk_id")
-    private Long vkId;
+    @Column(name = "telegram_id")
+    private Long telegramId;
 
     @Column(name = "avatar_url")
     private String avatarUrl;
