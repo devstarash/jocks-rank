@@ -18,6 +18,11 @@ const Admin = {
         return await getAuth('/admin/results');
     },
 
+    async loadResultsByStatus(status) {
+        this.checkAdminAccess();
+        return await getAuth(`/admin/results?status=${status}`);
+    },
+
     async addGlobalResult(userId, categorySlug, value) {
         this.checkAdminAccess();
         if (!userId) throw new Error('Укажите ID пользователя.');
@@ -30,10 +35,16 @@ const Admin = {
         }, true);
     },
 
-    async updateResult(id, data) {
+    async approveResult(id) {
         this.checkAdminAccess();
         if (!id) throw new Error('Укажите ID результата.');
-        return await put(`/admin/results/${id}`, data);
+        return await put(`/admin/results/${id}/approve`);
+    },
+
+    async rejectResult(id) {
+        this.checkAdminAccess();
+        if (!id) throw new Error('Укажите ID результата.');
+        return await put(`/admin/results/${id}/reject`);
     },
 
     async deleteResult(id) {

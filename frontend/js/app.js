@@ -502,14 +502,21 @@ async function renderProfile(container) {
     }).join('');
 
     const resultsRows = results.length === 0
-        ? '<tr><td colspan="5" class="text-center text-slate-400 py-4">Нет результатов</td></tr>'
+        ? '<tr><td colspan="6" class="text-center text-slate-400 py-4">Нет результатов</td></tr>'
         : results.map(r => {
             const cat = CATEGORIES[r.categorySlug] || { name: r.categoryName || r.categorySlug || '—', icon: '🏆' };
+            const statusMap = {
+                PENDING: { text: 'На модерации', cls: 'bg-amber-100 text-amber-700' },
+                APPROVED: { text: 'Подтверждено', cls: 'bg-green-100 text-green-700' },
+                REJECTED: { text: 'Отклонено', cls: 'bg-red-100 text-red-700' }
+            };
+            const st = statusMap[r.status] || statusMap.PENDING;
             return `
                 <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                     <td class="py-3 px-4">${cat.icon} ${cat.name}</td>
                     <td class="py-3 px-4 font-semibold text-slate-900">${r.value}</td>
                     <td class="py-3 px-4 text-slate-500">${formatDate(r.recordedAt || r.date)}</td>
+                    <td class="py-3 px-4"><span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ${st.cls}">${st.text}</span></td>
                     <td class="py-3 px-4 text-slate-500">${r.note || '—'}</td>
                     <td class="py-3 px-4">
                         <button onclick="handleDeleteMyResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">
@@ -549,6 +556,7 @@ async function renderProfile(container) {
                                     <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Категория</th>
                                     <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Результат</th>
                                     <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Дата</th>
+                                    <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Статус</th>
                                     <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Примечание</th>
                                     <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Действия</th>
                                 </tr>
@@ -608,19 +616,44 @@ async function renderAdmin(container) {
         </tr>
     `).join('');
 
-    const resultsRows = allResults.slice(0, 20).map((r, i) => `
-        <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-            <td class="py-3 px-4 text-slate-500">${i + 1}</td>
-            <td class="py-3 px-4 font-semibold text-slate-900">${r.username}</td>
-            <td class="py-3 px-4 text-slate-600">${r.categoryName || r.categorySlug}</td>
-            <td class="py-3 px-4 font-semibold text-slate-900">${r.value} ${r.unit || ''}</td>
-            <td class="py-3 px-4">
-                <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">
-                    Удалить
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    function renderResultsTable(results) {
+        if (results.length === 0) return '<p class="text-slate-400 text-sm">Нет результатов</p>';
+        return `<table class="w-full text-sm">
+            <thead>
+                <tr class="border-b border-slate-100">
+                    <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">#</th>
+                    <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Пользователь</th>
+                    <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Категория</th>
+                    <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Результат</th>
+                    <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Статус</th>
+                    <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${results.map((r, i) => {
+                    const statusMap = {
+                        PENDING: { text: 'На модерации', cls: 'bg-amber-100 text-amber-700' },
+                        APPROVED: { text: 'Подтверждено', cls: 'bg-green-100 text-green-700' },
+                        REJECTED: { text: 'Отклонено', cls: 'bg-red-100 text-red-700' }
+                    };
+                    const st = statusMap[r.status] || statusMap.PENDING;
+                    const actions = r.status === 'PENDING'
+                        ? `<button onclick="handleApproveResult(${r.id})" class="text-green-600 hover:text-green-800 text-sm mr-2">Подтвердить</button>
+                           <button onclick="handleRejectResult(${r.id})" class="text-amber-600 hover:text-amber-800 text-sm mr-2">Отклонить</button>
+                           <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
+                        : `<button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`;
+                    return `<tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td class="py-3 px-4 text-slate-500">${i + 1}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${r.username}</td>
+                        <td class="py-3 px-4 text-slate-600">${r.categoryName || r.categorySlug}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">${r.value} ${r.unit || ''}</td>
+                        <td class="py-3 px-4"><span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ${st.cls}">${st.text}</span></td>
+                        <td class="py-3 px-4">${actions}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>`;
+    }
 
     container.innerHTML = `
         <div class="fade-in">
@@ -659,12 +692,12 @@ async function renderAdmin(container) {
                 </form>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
                 <div class="border-b border-slate-100 px-6 py-4">
                     <h4 class="font-semibold text-slate-800">Пользователи (${users.length})</h4>
                 </div>
                 <div class="p-6">
-                    <table class="w-full text-sm mb-8">
+                    <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-slate-100">
                                 <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">ID</th>
@@ -677,24 +710,85 @@ async function renderAdmin(container) {
                         </thead>
                         <tbody>${usersRows}</tbody>
                     </table>
+                </div>
+            </div>
 
-                    <h4 class="font-semibold text-slate-800 mb-3">Глобальные результаты (${allResults.length})</h4>
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="border-b border-slate-100">
-                                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">#</th>
-                                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Пользователь</th>
-                                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Категория</th>
-                                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Результат</th>
-                                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>${resultsRows}</tbody>
-                    </table>
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+                    <h4 class="font-semibold text-slate-800">Результаты на модерацию</h4>
+                    <div class="flex gap-2">
+                        <button onclick="filterAdminResults('PENDING')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition" data-filter="PENDING">На модерации</button>
+                        <button onclick="filterAdminResults('APPROVED')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="APPROVED">Подтверждённые</button>
+                        <button onclick="filterAdminResults('REJECTED')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="REJECTED">Отклонённые</button>
+                        <button onclick="filterAdminResults('ALL')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="ALL">Все</button>
+                    </div>
+                </div>
+                <div class="p-6" id="admin-results-container">
+                    ${renderResultsTable(allResults)}
                 </div>
             </div>
         </div>
     `;
+}
+
+async function filterAdminResults(status) {
+    const container = document.getElementById('admin-results-container');
+    if (!container) return;
+    document.querySelectorAll('.admin-filter-btn').forEach(btn => {
+        const isActive = btn.dataset.filter === status;
+        btn.className = `admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg transition ${isActive ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`;
+    });
+    container.innerHTML = '<div class="flex justify-center py-4"><div class="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-900"></div></div>';
+    try {
+        let results;
+        if (status === 'ALL') {
+            results = await Admin.loadAllResults();
+        } else {
+            results = await Admin.loadResultsByStatus(status);
+        }
+        container.innerHTML = renderAdminResultsTable(results);
+    } catch (error) {
+        container.innerHTML = `<p class="text-red-500 text-sm">${error.message}</p>`;
+    }
+}
+
+function renderAdminResultsTable(results) {
+    if (results.length === 0) return '<p class="text-slate-400 text-sm">Нет результатов</p>';
+    return `<table class="w-full text-sm">
+        <thead>
+            <tr class="border-b border-slate-100">
+                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">#</th>
+                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Пользователь</th>
+                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Категория</th>
+                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Результат</th>
+                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Статус</th>
+                <th class="py-3 px-4 text-left text-slate-400 text-xs font-semibold uppercase tracking-wider">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${results.map((r, i) => {
+                const statusMap = {
+                    PENDING: { text: 'На модерации', cls: 'bg-amber-100 text-amber-700' },
+                    APPROVED: { text: 'Подтверждено', cls: 'bg-green-100 text-green-700' },
+                    REJECTED: { text: 'Отклонено', cls: 'bg-red-100 text-red-700' }
+                };
+                const st = statusMap[r.status] || statusMap.PENDING;
+                const actions = r.status === 'PENDING'
+                    ? `<button onclick="handleApproveResult(${r.id})" class="text-green-600 hover:text-green-800 text-sm mr-2">Подтвердить</button>
+                       <button onclick="handleRejectResult(${r.id})" class="text-amber-600 hover:text-amber-800 text-sm mr-2">Отклонить</button>
+                       <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
+                    : `<button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`;
+                return `<tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                    <td class="py-3 px-4 text-slate-500">${i + 1}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-900">${r.username}</td>
+                    <td class="py-3 px-4 text-slate-600">${r.categoryName || r.categorySlug}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-900">${r.value} ${r.unit || ''}</td>
+                    <td class="py-3 px-4"><span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium ${st.cls}">${st.text}</span></td>
+                    <td class="py-3 px-4">${actions}</td>
+                </tr>`;
+            }).join('')}
+        </tbody>
+    </table>`;
 }
 
 async function handleLogin(event) {
@@ -775,6 +869,26 @@ async function handleDeleteResult(resultId) {
     try {
         await Admin.deleteResult(resultId);
         showNotification('Результат удалён', 'success');
+        renderAdmin(document.getElementById('app'));
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+async function handleApproveResult(resultId) {
+    try {
+        await Admin.approveResult(resultId);
+        showNotification('Результат подтверждён', 'success');
+        renderAdmin(document.getElementById('app'));
+    } catch (error) {
+        showNotification(error.message, 'error');
+    }
+}
+
+async function handleRejectResult(resultId) {
+    try {
+        await Admin.rejectResult(resultId);
+        showNotification('Результат отклонён', 'success');
         renderAdmin(document.getElementById('app'));
     } catch (error) {
         showNotification(error.message, 'error');
