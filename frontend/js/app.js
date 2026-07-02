@@ -641,6 +641,12 @@ async function renderAdmin(container) {
                         ? `<button onclick="handleApproveResult(${r.id})" class="text-green-600 hover:text-green-800 text-sm mr-2">Подтвердить</button>
                            <button onclick="handleRejectResult(${r.id})" class="text-amber-600 hover:text-amber-800 text-sm mr-2">Отклонить</button>
                            <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
+                        : r.status === 'APPROVED'
+                        ? `<button onclick="handleRejectResult(${r.id})" class="text-amber-600 hover:text-amber-800 text-sm mr-2">Отклонить</button>
+                           <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
+                        : r.status === 'REJECTED'
+                        ? `<button onclick="handleApproveResult(${r.id})" class="text-green-600 hover:text-green-800 text-sm mr-2">Подтвердить</button>
+                           <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
                         : `<button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`;
                     return `<tr class="border-b border-slate-100 hover:bg-slate-50 transition">
                         <td class="py-3 px-4 text-slate-500">${i + 1}</td>
@@ -717,10 +723,10 @@ async function renderAdmin(container) {
                 <div class="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
                     <h4 class="font-semibold text-slate-800">Результаты на модерацию</h4>
                     <div class="flex gap-2">
-                        <button onclick="filterAdminResults('PENDING')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition" data-filter="PENDING">На модерации</button>
+                        <button onclick="filterAdminResults('PENDING')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="PENDING">На модерации</button>
                         <button onclick="filterAdminResults('APPROVED')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="APPROVED">Подтверждённые</button>
                         <button onclick="filterAdminResults('REJECTED')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="REJECTED">Отклонённые</button>
-                        <button onclick="filterAdminResults('ALL')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" data-filter="ALL">Все</button>
+                        <button onclick="filterAdminResults('ALL')" class="admin-filter-btn text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition" data-filter="ALL">Все</button>
                     </div>
                 </div>
                 <div class="p-6" id="admin-results-container">
@@ -776,6 +782,12 @@ function renderAdminResultsTable(results) {
                 const actions = r.status === 'PENDING'
                     ? `<button onclick="handleApproveResult(${r.id})" class="text-green-600 hover:text-green-800 text-sm mr-2">Подтвердить</button>
                        <button onclick="handleRejectResult(${r.id})" class="text-amber-600 hover:text-amber-800 text-sm mr-2">Отклонить</button>
+                       <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
+                    : r.status === 'APPROVED'
+                    ? `<button onclick="handleRejectResult(${r.id})" class="text-amber-600 hover:text-amber-800 text-sm mr-2">Отклонить</button>
+                       <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
+                    : r.status === 'REJECTED'
+                    ? `<button onclick="handleApproveResult(${r.id})" class="text-green-600 hover:text-green-800 text-sm mr-2">Подтвердить</button>
                        <button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`
                     : `<button onclick="handleDeleteResult(${r.id})" class="text-red-500 hover:text-red-700 text-sm">Удалить</button>`;
                 return `<tr class="border-b border-slate-100 hover:bg-slate-50 transition">
@@ -875,11 +887,16 @@ async function handleDeleteResult(resultId) {
     }
 }
 
+function getCurrentAdminFilter() {
+    const activeBtn = document.querySelector('.admin-filter-btn.bg-amber-100');
+    return activeBtn ? activeBtn.dataset.filter : 'ALL';
+}
+
 async function handleApproveResult(resultId) {
     try {
         await Admin.approveResult(resultId);
         showNotification('Результат подтверждён', 'success');
-        renderAdmin(document.getElementById('app'));
+        await filterAdminResults(getCurrentAdminFilter());
     } catch (error) {
         showNotification(error.message, 'error');
     }
@@ -889,7 +906,7 @@ async function handleRejectResult(resultId) {
     try {
         await Admin.rejectResult(resultId);
         showNotification('Результат отклонён', 'success');
-        renderAdmin(document.getElementById('app'));
+        await filterAdminResults(getCurrentAdminFilter());
     } catch (error) {
         showNotification(error.message, 'error');
     }

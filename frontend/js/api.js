@@ -1,15 +1,21 @@
 const API_BASE = '/api';
 
 async function request(method, path, body = null, auth = false) {
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = {};
 
     const config = {
         method,
         headers,
-        credentials: 'include' // ВАЖНО: отправляем куки
+        credentials: 'include'
     };
 
-    if (body) config.body = JSON.stringify(body);
+    if (body) {
+        headers['Content-Type'] = 'application/json';
+        config.body = JSON.stringify(body);
+    } else if (method === 'PUT') {
+        headers['Content-Type'] = 'application/json';
+        config.body = '';
+    }
 
     const response = await fetch(`${API_BASE}${path}`, config);
 
@@ -37,7 +43,7 @@ function post(path, body, auth = true) {
     return request('POST', path, body, auth);
 }
 
-function put(path, body) {
+function put(path, body = null) {
     return request('PUT', path, body, true);
 }
 

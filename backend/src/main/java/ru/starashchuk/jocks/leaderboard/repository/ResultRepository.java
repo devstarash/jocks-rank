@@ -52,7 +52,12 @@ public class ResultRepository {
     }
 
     public Optional<Result> findById(Integer id) {
-        return Optional.ofNullable(factory.getCurrentSession().find(Result.class, id));
+        Session session = factory.getCurrentSession();
+        SelectionQuery<Result> query = session.createSelectionQuery(
+                "SELECT r FROM Result r JOIN FETCH r.user JOIN FETCH r.category WHERE r.id = :id",
+                Result.class)
+                .setParameter("id", id);
+        return query.getResultList().stream().findFirst();
     }
 
     public List<Result> findForModeration(String categorySlug, ResultStatus status) {
