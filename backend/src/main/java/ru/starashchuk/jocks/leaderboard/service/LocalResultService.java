@@ -6,10 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.starashchuk.jocks.leaderboard.exception.AccessDeniedException;
 import ru.starashchuk.jocks.leaderboard.exception.NotFoundException;
 import ru.starashchuk.jocks.leaderboard.mapper.ResultMapper;
-import ru.starashchuk.jocks.leaderboard.model.AddResultRequest;
-import ru.starashchuk.jocks.leaderboard.model.Category;
-import ru.starashchuk.jocks.leaderboard.model.Result;
-import ru.starashchuk.jocks.leaderboard.model.User;
+import ru.starashchuk.jocks.leaderboard.model.*;
 import ru.starashchuk.jocks.leaderboard.repository.CategoryRepository;
 import ru.starashchuk.jocks.leaderboard.repository.ResultRepository;
 import ru.starashchuk.jocks.leaderboard.repository.UserRepository;
@@ -42,7 +39,7 @@ public class LocalResultService {
         result.setUser(user);
         result.setCategory(category);
         result.setValue(request.getValue());
-        result.setApproved(false);
+        result.setStatus(ResultStatus.PENDING);
         return resultService.save(result);
     }
 

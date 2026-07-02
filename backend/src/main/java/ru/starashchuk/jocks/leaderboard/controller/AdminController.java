@@ -9,6 +9,7 @@ import ru.starashchuk.jocks.leaderboard.dto.UserDto;
 import ru.starashchuk.jocks.leaderboard.mapper.ResultMapper;
 import ru.starashchuk.jocks.leaderboard.mapper.UserMapper;
 import ru.starashchuk.jocks.leaderboard.model.AddResultRequest;
+import ru.starashchuk.jocks.leaderboard.model.ResultStatus;
 import ru.starashchuk.jocks.leaderboard.model.User;
 import ru.starashchuk.jocks.leaderboard.service.AdminService;
 
@@ -53,5 +54,23 @@ public class AdminController {
     public ResponseEntity<Void> changeRole(@PathVariable Integer id, @RequestBody Map<String, String> body) {
         adminService.changeRole(id, body.get("role"));
         return ResponseEntity.ok().build();
+    }
+    @GetMapping("/results")
+    public ResponseEntity<List<ResultDto>> getResultsForModeration(
+            @RequestParam(required = false) String categorySlug,
+            @RequestParam(required = false) ResultStatus status) {
+        List<ResultDto> results = adminService.getResultsForModeration(categorySlug, status)
+                .stream().map(resultMapper::toDto).toList();
+        return ResponseEntity.ok(results);
+    }
+
+    @PutMapping("/results/{id}/approve")
+    public ResponseEntity<ResultDto> approveResult(@PathVariable Integer id) {
+        return ResponseEntity.ok(resultMapper.toDto(adminService.approveResult(id)));
+    }
+
+    @PutMapping("/results/{id}/reject")
+    public ResponseEntity<ResultDto> rejectResult(@PathVariable Integer id) {
+        return ResponseEntity.ok(resultMapper.toDto(adminService.rejectResult(id)));
     }
 }

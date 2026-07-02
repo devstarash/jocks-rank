@@ -11,6 +11,7 @@ public interface ResultMapper {
     @Mappings({
             @Mapping(source = "user.username", target = "username"),
             @Mapping(source = "category.name", target = "categoryName"),
+            @Mapping(source = "category.slug", target = "categorySlug"),
             @Mapping(source = "category.unit", target = "unit")
     })
     ResultDto toDto(Result result);

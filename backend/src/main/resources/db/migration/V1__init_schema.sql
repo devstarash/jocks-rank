@@ -27,7 +27,7 @@ CREATE TABLE results
     user_id     BIGINT         NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     category_id BIGINT         NOT NULL REFERENCES categories (id),
     value       NUMERIC(10, 2) NOT NULL CHECK (value > 0),
-    approved    BOOLEAN        NOT NULL DEFAULT FALSE,
+    status      VARCHAR(20)    NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
     note        VARCHAR(512),
     recorded_at TIMESTAMP      NOT NULL DEFAULT NOW(),
     created_at  TIMESTAMP      NOT NULL DEFAULT NOW()
