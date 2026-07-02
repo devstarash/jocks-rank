@@ -19,3 +19,30 @@ body {
     background-color: #cbd5e1;
     border-radius: 2px;
 }
+
+/* Таблицы — горизонтальный скролл на мобилках */
+.overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Графики — адаптивная высота */
+@media (max-width: 640px) {
+    .chart-responsive {
+        height: 250px !important;
+    }
+}
+
+/* Табы категорий — горизонтальный скролл */
+.tabs-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.tabs-scroll::-webkit-scrollbar {
+    height: 4px;
+}
+.tabs-scroll::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 2px;
+}

@@ -55,3 +55,16 @@ const Charts = {
         Plotly.newPlot(container, [trace], layout, { responsive: true, displayModeBar: false });
     }
 };
+
+window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+        document.querySelectorAll('.js-plotly-plot').forEach(el => Plotly.Plots.resize(el));
+    }, 300);
+});
+
+window.addEventListener('resize', () => {
+    clearTimeout(window._resizeTimer);
+    window._resizeTimer = setTimeout(() => {
+        document.querySelectorAll('.js-plotly-plot').forEach(el => Plotly.Plots.resize(el));
+    }, 200);
+});
