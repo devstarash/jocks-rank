@@ -6,6 +6,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.query.SelectionQuery;
 import org.springframework.stereotype.Repository;
 import ru.starashchuk.jocks.leaderboard.model.Result;
+import ru.starashchuk.jocks.leaderboard.model.ResultStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -49,7 +50,30 @@ public class ResultRepository {
             factory.getCurrentSession().remove(result);
         }
     }
+
     public Optional<Result> findById(Integer id) {
         return Optional.ofNullable(factory.getCurrentSession().find(Result.class, id));
+    }
+
+    public List<Result> findForModeration(String categorySlug, ResultStatus status) {
+        Session session = factory.getCurrentSession();
+        StringBuilder hql = new StringBuilder(
+                "SELECT r FROM Result r JOIN FETCH r.user JOIN FETCH r.category WHERE 1=1");
+        if (status != null) {
+            hql.append(" AND r.status = :status");
+        }
+        if (categorySlug != null) {
+            hql.append(" AND r.category.slug = :slug");
+        }
+        hql.append(" ORDER BY r.category.name ASC, r.recordedAt ASC");
+
+        SelectionQuery<Result> query = session.createSelectionQuery(hql.toString(), Result.class);
+        if (status != null) {
+            query.setParameter("status", status);
+        }
+        if (categorySlug != null) {
+            query.setParameter("slug", categorySlug);
+        }
+        return query.getResultList();
     }
 }

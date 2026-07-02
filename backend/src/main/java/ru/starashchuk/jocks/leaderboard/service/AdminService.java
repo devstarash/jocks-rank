@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.starashchuk.jocks.leaderboard.exception.NotFoundException;
-import ru.starashchuk.jocks.leaderboard.model.AddResultRequest;
-import ru.starashchuk.jocks.leaderboard.model.Category;
-import ru.starashchuk.jocks.leaderboard.model.Result;
-import ru.starashchuk.jocks.leaderboard.model.User;
+import ru.starashchuk.jocks.leaderboard.model.*;
 import ru.starashchuk.jocks.leaderboard.repository.CategoryRepository;
 import ru.starashchuk.jocks.leaderboard.repository.ResultRepository;
 import ru.starashchuk.jocks.leaderboard.repository.UserRepository;
@@ -22,21 +19,6 @@ public class AdminService {
     private final ResultRepository resultRepository;
     private final CategoryRepository categoryRepository;
 
-    @Transactional
-    public Result addGlobalResult(Integer userId, AddResultRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        Category category = categoryRepository.findBySlug(request.getCategorySlug())
-                .orElseThrow(() -> new NotFoundException("Категория не найдена"));
-
-        Result result = new Result();
-        result.setUser(user);
-        result.setCategory(category);
-        result.setValue(request.getValue());
-        result.setApproved(true);
-
-        return resultRepository.save(result);
-    }
 
     @Transactional
     public Result updateResult(Integer id, AddResultRequest request) {
@@ -67,5 +49,40 @@ public class AdminService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         user.setRole(role);
         userRepository.save(user);
+    }
+
+    @Transactional
+    public Result addGlobalResult(Integer userId, AddResultRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Category category = categoryRepository.findBySlug(request.getCategorySlug())
+                .orElseThrow(() -> new NotFoundException("Категория не найдена"));
+        Result result = new Result();
+        result.setUser(user);
+        result.setCategory(category);
+        result.setValue(request.getValue());
+        result.setStatus(ResultStatus.APPROVED);
+        return resultRepository.save(result);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Result> getResultsForModeration(String categorySlug, ResultStatus status) {
+        return resultRepository.findForModeration(categorySlug, status);
+    }
+
+    @Transactional
+    public Result approveResult(Integer id) {
+        Result result = resultRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Результат не найден"));
+        result.setStatus(ResultStatus.APPROVED);
+        return resultRepository.save(result);
+    }
+
+    @Transactional
+    public Result rejectResult(Integer id) {
+        Result result = resultRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Результат не найден"));
+        result.setStatus(ResultStatus.REJECTED);
+        return resultRepository.save(result);
     }
 }

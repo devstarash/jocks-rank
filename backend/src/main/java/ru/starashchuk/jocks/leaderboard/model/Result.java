@@ -29,7 +29,9 @@ public class Result {
 
     private BigDecimal value;
 
-    private Boolean approved = false;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", length = 20)
+    private ResultStatus status = ResultStatus.PENDING;
 
     private String note;
 
