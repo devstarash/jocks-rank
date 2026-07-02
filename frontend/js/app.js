@@ -63,6 +63,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('hashchange', router);
 
+function onTelegramAuth(user) {
+    Auth.telegramAuth(user).then(() => {
+        showNotification('Вход через Telegram выполнен!', 'success');
+        window.location.hash = '/profile';
+    }).catch(error => {
+        showNotification('Ошибка Telegram авторизации: ' + error.message, 'error');
+    });
+}
+window.onTelegramAuth = onTelegramAuth;
+
 function router() {
     const hash = window.location.hash.slice(1) || '/';
     const app = document.getElementById('app');
@@ -335,6 +345,56 @@ async function renderLeaderboard(container, categorySlug) {
     }, 100);
 }
 
+function loadTelegramWidget(containerId) {
+    if (window.Telegram && window.Telegram.Login) {
+        mountTgWidget(containerId);
+        return;
+    }
+    if (document.getElementById('tg-widget-script')) {
+        setTimeout(() => mountTgWidget(containerId), 500);
+        return;
+    }
+    const script = document.createElement('script');
+    script.id = 'tg-widget-script';
+    script.src = 'https://telegram.org/js/telegram-widget.js?22';
+    script.onload = () => setTimeout(() => mountTgWidget(containerId), 500);
+    script.onerror = () => showTgFallback(containerId);
+    document.head.appendChild(script);
+    setTimeout(() => {
+        if (!document.getElementById(containerId)?.querySelector('iframe')) {
+            showTgFallback(containerId);
+        }
+    }, 5000);
+}
+
+function mountTgWidget(containerId) {
+    const widget = document.getElementById(containerId);
+    if (!widget) return;
+    if (window.Telegram && window.Telegram.Login) {
+        try {
+            new window.Telegram.Login.Widget({
+                bot_username: 'jock_leaderboard_bot',
+                size: 'large',
+                request_access: 'write',
+                onauth: onTelegramAuth
+            }).mount(widget);
+        } catch (e) {
+            showTgFallback(containerId);
+        }
+    } else {
+        showTgFallback(containerId);
+    }
+}
+
+function showTgFallback(containerId) {
+    const widget = document.getElementById(containerId);
+    if (!widget || widget.querySelector('a')) return;
+    widget.innerHTML = `<a href="https://t.me/jock_leaderboard_bot" target="_blank" class="inline-flex items-center gap-2 bg-[#2AABEE] text-white font-bold text-sm px-6 py-2.5 rounded-lg hover:bg-[#229ED9] transition">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        Войти через Telegram
+    </a>`;
+}
+
 function renderLogin(container) {
     container.innerHTML = `
         <div class="fade-in flex justify-center">
@@ -356,12 +416,19 @@ function renderLogin(container) {
                         Войти
                     </button>
                 </form>
+                <div class="flex items-center gap-3 my-4">
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                    <span class="text-xs text-slate-400 font-medium">или</span>
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                </div>
+                <div id="tg-login-widget" class="flex justify-center"></div>
                 <p class="text-sm text-slate-500 text-center mt-4">
                     Нет аккаунта? <a href="#/register" class="text-blue-600 hover:underline">Зарегистрируйтесь</a>
                 </p>
             </div>
         </div>
     `;
+    setTimeout(() => loadTelegramWidget('tg-login-widget'), 100);
 }
 
 function renderRegister(container) {
@@ -395,12 +462,19 @@ function renderRegister(container) {
                         Зарегистрироваться
                     </button>
                 </form>
+                <div class="flex items-center gap-3 my-4">
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                    <span class="text-xs text-slate-400 font-medium">или</span>
+                    <div class="flex-1 h-px bg-slate-200"></div>
+                </div>
+                <div id="tg-register-widget" class="flex justify-center"></div>
                 <p class="text-sm text-slate-500 text-center mt-4">
                     Уже есть аккаунт? <a href="#/login" class="text-blue-600 hover:underline">Войдите</a>
                 </p>
             </div>
         </div>
     `;
+    setTimeout(() => loadTelegramWidget('tg-register-widget'), 100);
 }
 
 async function renderProfile(container) {

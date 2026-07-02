@@ -31,8 +31,6 @@ public class OneRepResult {
     @Column(insertable = false, updatable = false)
     private BigDecimal total;
 
-    private String source = "LOCAL";
-
     private Boolean approved = false;
 
     private String note;

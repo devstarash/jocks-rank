@@ -45,4 +45,13 @@ public class UserRepository {
         Optional<User> user = findByUsernameRequest.uniqueResultOptional();
         return user;
     }
+
+    public Optional<User> findByTelegramId(Long telegramId) {
+        Session session = factory.getCurrentSession();
+        SelectionQuery<User> query = session
+                .createSelectionQuery("FROM User WHERE telegramId = :telegramId", User.class)
+                .setParameter("telegramId", telegramId);
+        Optional<User> user = query.uniqueResultOptional();
+        return user;
+    }
 }

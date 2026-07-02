@@ -36,14 +36,12 @@ public class LocalResultService {
     public Result addResult(String username, AddResultRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-
         Category category = categoryRepository.findBySlug(request.getCategorySlug())
                 .orElseThrow(() -> new NotFoundException("Категория не найдена"));
         Result result = new Result();
         result.setUser(user);
         result.setCategory(category);
         result.setValue(request.getValue());
-        result.setSource("LOCAL");
         result.setApproved(false);
         return resultService.save(result);
     }

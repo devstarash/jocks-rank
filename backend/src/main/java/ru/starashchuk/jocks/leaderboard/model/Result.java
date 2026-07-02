@@ -29,8 +29,6 @@ public class Result {
 
     private BigDecimal value;
 
-    private String source = "LOCAL";
-
     private Boolean approved = false;
 
     private String note;

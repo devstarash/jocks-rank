@@ -1,7 +1,6 @@
 const Auth = {
     async login(username, password) {
         const response = await post('/auth/login', { username, password }, false);
-        // response = { username, role }
         saveAuth(response);
         return response;
     },
@@ -12,10 +11,14 @@ const Auth = {
         return response;
     },
 
+    async telegramAuth(telegramData) {
+        const response = await post('/auth/telegram', telegramData, false);
+        saveAuth(response);
+        return response;
+    },
+
     logout() {
-        // Опционально: можно сделать запрос на сервер для очистки куки
         clearAuth();
-        // Перезагрузка страницы очистит httpOnly куку (если сервер не сделал эндпоинт logout)
         window.location.reload();
     },
 
