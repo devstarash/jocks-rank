@@ -49,7 +49,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5500", "http://127.0.0.1:5500", "http://localhost"));
+        config.setAllowedOriginPatterns(List.of("https://*.trycloudflare.com", "http://localhost:*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With"));
         config.setAllowCredentials(true);

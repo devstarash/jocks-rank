@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   db:
     image: postgres:16-alpine
@@ -6,29 +8,40 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432" # Оставляем! Это супер-ход: теперь докеровский Postgres доступен на порту 5433 и не конфликтует с твоим локальным на 5432.
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
 
   backend:
     build: ./backend
     ports:
-      - "8080:8080"
+      - "8080:8080" # Оставляем для локалки, чтобы можно было стучаться к API напрямую через localhost:8080/api
     environment:
+      # Важно: меняем названия переменных на те, что мы прописали в application.properties!
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/jock_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-      HIBERNATE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      APP_JWT_SECRET: "lPzL9hO9bw5TXcH9ZB3YAY5FH57CJ3SGqPmk0/hVTPZ9P4BSZLE/gGF5jZhVFtyz"
+      TELEGRAM_BOT_TOKEN: "8677667405:AAH8HfHURQGPbgGsGtP319u9dJerrlNPO38"
     depends_on:
       - db
+    networks:
+      - app-network
 
   frontend:
     build: ./frontend
     ports:
-      - "80:80"
+      - "80:80" # Для локалки без Nginx Proxy Manager открываем фронт напрямую на 80 порт
     depends_on:
       - backend
+    networks:
+      - app-network
 
 volumes:
   postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
