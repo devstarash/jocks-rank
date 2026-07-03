@@ -37,6 +37,6 @@ const Auth = {
     getInitials() {
         const user = this.getCurrentUser();
         if (!user) return '??';
-        return user.username.substring(0, 2).toUpperCase();
+        return user.username.substring(0, 1).toUpperCase();
     }
 };

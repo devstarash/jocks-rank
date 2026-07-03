@@ -1,9 +1,9 @@
 const CATEGORIES = {
-    pullups: { name: 'Подтягивания', icon: '💪' },
-    bench: { name: 'Жим лежа', icon: '🏋️' },
-    complex: { name: 'Комплекс', icon: '🤸' },
-    'one-rep': { name: 'На раз', icon: '⚡' },
-    tonnage: { name: 'Тоннаж', icon: '📦' }
+    pullups: { name: 'Подтягивания', icon: '' },
+    bench: { name: 'Жим лежа', icon: '' },
+    complex: { name: 'Комплекс', icon: '' },
+    'one-rep': { name: 'На раз', icon: '' },
+    tonnage: { name: 'Тоннаж', icon: '' }
 };
 
 const CATEGORY_TITLES = {
@@ -190,7 +190,7 @@ async function renderOverview(container) {
                 <div class="flex overflow-x-auto gap-2 pb-3 max-w-full">
                     ${categories.map(cat => `
                         <a href="#/leaderboard/${cat.slug}" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap hover:bg-slate-100 transition">
-                            ${CATEGORIES[cat.slug]?.icon || '🏆'} ${cat.name}
+                            ${CATEGORIES[cat.slug]?.icon || ''} ${cat.name}
                         </a>
                     `).join('')}
                 </div>
@@ -203,7 +203,7 @@ async function renderOverview(container) {
                         const top = topByCategory[cat.slug] || [];
                         return `
                             <div class="bg-white border border-slate-200 rounded-xl p-4">
-                                <h3 class="font-semibold text-slate-900 mb-2">${CATEGORIES[cat.slug]?.icon || '🏆'} ${cat.name}</h3>
+                                <h3 class="font-semibold text-slate-900 mb-2">${CATEGORIES[cat.slug]?.icon || ''} ${cat.name}</h3>
                                 ${top.length > 0 ? top.map((r, i) => `
                                     <div class="flex justify-between text-sm py-1">
                                         <span class="text-slate-600">${i + 1}. ${r.username}</span>
@@ -269,7 +269,7 @@ async function renderLeaderboard(container, categorySlug) {
     }
 
     const formattedResults = Leaderboard.formatResults(results);
-    const catInfo = CATEGORIES[categorySlug] || { name: categorySlug, icon: '🏆' };
+    const catInfo = CATEGORIES[categorySlug] || { name: categorySlug, icon: '' };
 
     container.innerHTML = `
         <div class="fade-in">
@@ -495,7 +495,7 @@ async function renderProfile(container) {
         const safeId = categoryName.replace(/[^a-zA-Zа-яА-Я0-9]/g, '-');
         return `
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-4">
-                <h5 class="font-semibold text-slate-800 mb-3">📊 ${categoryName}</h5>
+                <h5 class="font-semibold text-slate-800 mb-3">${categoryName}</h5>
                 <div id="chart-${safeId}" style="height: 220px;"></div>
             </div>
         `;
@@ -504,7 +504,7 @@ async function renderProfile(container) {
     const resultsRows = results.length === 0
         ? '<tr><td colspan="6" class="text-center text-slate-400 py-4">Нет результатов</td></tr>'
         : results.map(r => {
-            const cat = CATEGORIES[r.categorySlug] || { name: r.categoryName || r.categorySlug || '—', icon: '🏆' };
+            const cat = CATEGORIES[r.categorySlug] || { name: r.categoryName || r.categorySlug || '—', icon: '' };
             const statusMap = {
                 PENDING: { text: 'На модерации', cls: 'bg-amber-100 text-amber-700' },
                 APPROVED: { text: 'Подтверждено', cls: 'bg-green-100 text-green-700' },

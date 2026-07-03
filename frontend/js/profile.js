@@ -34,7 +34,7 @@ const Profile = {
     groupResultsByCategory(results) {
         const grouped = {};
         results.forEach(result => {
-            const category = result.categorySlug || result.categoryName || 'unknown';
+            const category = result.categoryName || result.categorySlug || 'unknown';
             if (!grouped[category]) {
                 grouped[category] = [];
             }

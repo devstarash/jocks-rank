@@ -24,13 +24,18 @@ public class ResultRepository {
 
     public List<Result> findByCategorySlug(String slug) {
         Session session = factory.getCurrentSession();
-        SelectionQuery<Result> findResultsRequest =
-                session.createSelectionQuery
-                                ("SELECT r FROM Result r JOIN FETCH r.user JOIN FETCH r.category" +
-                                        " WHERE r.status = 'APPROVED' AND r.category.slug = :slug" +
-                                        " ORDER BY r.value DESC", Result.class)
-                        .setParameter("slug", slug);
-        List<Result> results = findResultsRequest.getResultList();
+        List<?> ids = session.createNativeQuery(
+                "SELECT DISTINCT ON (r.user_id) r.id FROM results r" +
+                " WHERE r.status = 'APPROVED' AND r.category_id = (SELECT id FROM categories WHERE slug = :slug)" +
+                " ORDER BY r.user_id, r.value DESC")
+                .setParameter("slug", slug)
+                .getResultList();
+        if (ids.isEmpty()) return List.of();
+        List<Result> results = session.createSelectionQuery(
+                "SELECT r FROM Result r JOIN FETCH r.user JOIN FETCH r.category WHERE r.id IN :ids ORDER BY r.value DESC",
+                Result.class)
+                .setParameter("ids", ids)
+                .getResultList();
         return results;
     }
 
