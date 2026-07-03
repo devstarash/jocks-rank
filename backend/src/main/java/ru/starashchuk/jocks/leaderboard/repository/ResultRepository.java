@@ -27,7 +27,7 @@ public class ResultRepository {
         SelectionQuery<Result> findResultsRequest =
                 session.createSelectionQuery
                                 ("SELECT r FROM Result r JOIN FETCH r.user JOIN FETCH r.category" +
-                                        " WHERE r.approved = true AND r.category.slug = :slug" +
+                                        " WHERE r.status = 'APPROVED' AND r.category.slug = :slug" +
                                         " ORDER BY r.value DESC", Result.class)
                         .setParameter("slug", slug);
         List<Result> results = findResultsRequest.getResultList();
