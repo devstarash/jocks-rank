@@ -10,7 +10,6 @@ import ru.starashchuk.jocks.leaderboard.mapper.ResultMapper;
 import ru.starashchuk.jocks.leaderboard.mapper.UserMapper;
 import ru.starashchuk.jocks.leaderboard.model.AddResultRequest;
 import ru.starashchuk.jocks.leaderboard.model.ResultStatus;
-import ru.starashchuk.jocks.leaderboard.model.User;
 import ru.starashchuk.jocks.leaderboard.service.AdminService;
 
 import java.util.List;
